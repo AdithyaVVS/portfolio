@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Adithya Velamakanni</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout concept: the portfolio is an API explorer. A sticky route list on the left, each section is a request with its response. */
+:root {
+  --bg: #E8ECF1;
+  --panel: #F6F8FA;
+  --ink: #0F1722;
+  --muted: #546072;
+  --line: #C6CFDA;
+  --accent: #2447F5;
+  --accent-ink: #FFFFFF;
+  --ok: #12763D;
+  --warn: #93560A;
+  --bad: #B3261E;
+  --code-bg: #101826;
+  --code-fg: #D5DCE8;
+  --code-dim: #7C889B;
+  --j-key: #9DB2FF;
+  --j-str: #9BE3B0;
+  --j-num: #FFC57A;
+  --j-bool: #F5A3CC;
+  --code-line: #243044;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0C1118; --panel: #141B25; --ink: #E7ECF3; --muted: #94A1B3; --line: #262F3C;
+    --accent: #8FA8FF; --accent-ink: #0C1118; --ok: #5FD38D; --warn: #F0B35A; --bad: #FF8A80;
+    --code-bg: #0A0E14; --code-line: #1E2735; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0C1118; --panel: #141B25; --ink: #E7ECF3; --muted: #94A1B3; --line: #262F3C;
+  --accent: #8FA8FF; --accent-ink: #0C1118; --ok: #5FD38D; --warn: #F0B35A; --bad: #FF8A80;
+  --code-bg: #0A0E14; --code-line: #1E2735; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+code, .mono { font-family: var(--font-mono); }
+
+.shell { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 56px; padding-block: 28px 56px; }
+
+/* ---------- route list ---------- */
+.routes { position: sticky; top: 28px; align-self: start; display: flex; flex-direction: column; gap: 22px; }
+.brand { font-family: var(--font-display); font-weight: 700; font-size: 20px; letter-spacing: -0.01em; line-height: 1.15; }
+.brand small { display: block; font-family: var(--font-mono); font-weight: 400; font-size: 12px; color: var(--muted); margin-top: 6px; letter-spacing: 0; }
+.routes ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.routes a { display: flex; gap: 10px; align-items: baseline; text-decoration: none; font-family: var(--font-mono); font-size: 13px; color: var(--muted); padding: 6px 10px; border-radius: 6px; border: 1px solid transparent; }
+.routes a b { font-weight: 500; font-size: 10px; letter-spacing: 0.06em; color: var(--accent); min-width: 28px; }
+.routes a:hover { color: var(--ink); background: var(--panel); }
+.routes a[aria-current="true"] { color: var(--ink); background: var(--panel); border-color: var(--line); }
+.theme { align-self: flex-start; font-family: var(--font-mono); font-size: 12px; color: var(--muted); background: none; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+.theme:hover { color: var(--ink); border-color: var(--muted); }
+
+main { display: flex; flex-direction: column; gap: 80px; min-width: 0; }
+section { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+/* ---------- request line ---------- */
+.req { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+.method { color: var(--accent); font-weight: 500; letter-spacing: 0.04em; }
+.path { color: var(--ink); overflow-wrap: anywhere; }
+.status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 2px 9px; border-radius: 99px; color: var(--ok); background: color-mix(in srgb, var(--ok) 14%, transparent); border: 1px solid color-mix(in srgb, var(--ok) 35%, transparent); }
+.status.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, transparent); border-color: color-mix(in srgb, var(--warn) 35%, transparent); }
+.status.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 14%, transparent); border-color: color-mix(in srgb, var(--bad) 35%, transparent); }
+h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(28px, 4vw, 40px); line-height: 1.08; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+h3 { font-family: var(--font-display); font-weight: 700; font-size: 24px; line-height: 1.15; letter-spacing: -0.015em; margin: 0; }
+p { margin: 0; }
+.lead { font-size: 18px; max-width: 62ch; color: var(--ink); }
+.muted { color: var(--muted); }
+
+/* ---------- hero ---------- */
+.hero { gap: 28px; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(40px, 7.2vw, 84px); line-height: 0.98; letter-spacing: -0.035em; margin: 0; text-wrap: balance; }
+h1 span { color: var(--accent); }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+.cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 500; text-decoration: none; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.08); }
+
+/* ---------- code / response blocks ---------- */
+.res { background: var(--code-bg); color: var(--code-fg); border-radius: 10px; border: 1px solid var(--code-line); overflow: hidden; min-width: 0; }
+.res-bar { display: flex; justify-content: space-between; gap: 12px; padding: 9px 14px; font-family: var(--font-mono); font-size: 11px; color: var(--code-dim); border-bottom: 1px solid var(--code-line); letter-spacing: 0.03em; }
+.res pre { margin: 0; padding: 14px 16px 16px; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.75; overflow-x: auto; }
+.res pre span.l { display: block; animation: rise .5s both; animation-delay: calc(var(--i) * 40ms + 100ms); white-space: pre; }
+.k { color: var(--j-key); } .s { color: var(--j-str); } .n { color: var(--j-num); } .b { color: var(--j-bool); } .d { color: var(--code-dim); }
+@keyframes rise { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ---------- panels ---------- */
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; min-width: 0; }
+.p-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--line); }
+.p-body { padding: 22px 18px 20px; display: grid; gap: 18px; min-width: 0; }
+.p-body ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; max-width: 70ch; }
+.p-body li::marker { color: var(--accent); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-family: var(--font-mono); font-size: 11.5px; padding: 3px 9px; border: 1px solid var(--line); border-radius: 99px; color: var(--muted); }
+.demo { border: 1px dashed var(--muted); border-radius: 10px; padding: 16px; display: grid; gap: 14px; min-width: 0; }
+.demo-title { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+input[type="text"], textarea, select {
+  font-family: var(--font-mono); font-size: 13px; color: var(--ink); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; min-width: 0;
+}
+input[type="text"] { width: 120px; }
+textarea { width: 100%; min-height: 138px; resize: vertical; line-height: 1.6; }
+select { padding-right: 6px; }
+.op { font-family: var(--font-mono); color: var(--muted); }
+.cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cmp > div { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.cmp small { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.04em; margin-bottom: 4px; }
+.cmp output { font-family: var(--font-mono); font-size: 18px; overflow-wrap: anywhere; }
+.cmp .wrong output { color: var(--bad); }
+.cmp .right output { color: var(--ok); }
+.mini { font-family: var(--font-mono); font-size: 12px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 99px; background: none; color: var(--muted); cursor: pointer; }
+.mini:hover { color: var(--ink); border-color: var(--muted); }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12.5px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 400; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; }
+td.num { font-variant-numeric: tabular-nums; text-align: right; }
+.out { font-family: var(--font-mono); font-size: 13px; display: grid; gap: 6px; }
+.out .line { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+
+/* ---------- headers table (stack) ---------- */
+.hdrs { display: grid; }
+.hdr { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 4px 20px; padding: 14px 18px; border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-size: 13px; }
+.hdr:last-child { border-bottom: 0; }
+.hdr dt { color: var(--accent); }
+.hdr dd { margin: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.hdr dd span { color: var(--ink); }
+.hdr.next dd span { color: var(--muted); font-style: italic; }
+
+/* ---------- education ---------- */
+.cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.card { padding: 18px; display: grid; gap: 8px; align-content: start; }
+.card .big { font-family: var(--font-display); font-weight: 700; font-size: 34px; letter-spacing: -0.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+.card .big small { font-family: var(--font-mono); font-weight: 400; font-size: 12px; color: var(--muted); letter-spacing: 0; margin-left: 6px; }
+.card h3 { font-size: 17px; }
+.cert { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+.cert:last-child { border-bottom: 0; }
+.cert a { font-family: var(--font-mono); font-size: 12.5px; color: var(--accent); text-underline-offset: 3px; }
+
+/* ---------- contact ---------- */
+.contact-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.link-card { display: grid; gap: 4px; padding: 18px; text-decoration: none; }
+.link-card:hover { border-color: var(--accent); }
+.link-card b { font-family: var(--font-display); font-size: 20px; letter-spacing: -0.01em; }
+.link-card span { font-family: var(--font-mono); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.mail { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; padding: 20px 18px; }
+.mail code { font-size: clamp(15px, 3.4vw, 22px); overflow-wrap: anywhere; }
+footer { font-family: var(--font-mono); font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 18px; }
+
+/* ---------- narrow ---------- */
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 0; padding-block: 0 48px; }
+  .routes { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; flex-direction: row; align-items: center; gap: 12px; padding: 10px 0; background: var(--bg); border-bottom: 1px solid var(--line); margin-bottom: 36px; }
+  .brand small { display: none; }
+  .brand { font-size: 16px; white-space: nowrap; }
+  .routes nav { overflow-x: auto; min-width: 0; flex: 1; scrollbar-width: none; }
+  .routes ul { flex-direction: row; gap: 2px; }
+  .routes a { white-space: nowrap; padding: 6px 9px; }
+  .routes a b { display: none; }
+  .theme { margin-left: auto; align-self: center; }
+  html { scroll-padding-top: 64px; }
+  main { gap: 64px; }
+  .hero-grid { grid-template-columns: minmax(0, 1fr); }
+  .contact-grid, .cards { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .hdr { grid-template-columns: minmax(0, 1fr); }
+  .cmp { grid-template-columns: minmax(0, 1fr); }
+  .p-body, .p-head { padding-inline: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .res pre span.l { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="routes">
+    <div class="brand">Adithya V.<small>GET /adithya</small></div>
+    <nav aria-label="Sections">
+      <ul id="nav">
+        <li><a href="#top" data-s="top"><b>GET</b>/</a></li>
+        <li><a href="#about" data-s="about"><b>GET</b>/about</a></li>
+        <li><a href="#projects" data-s="projects"><b>GET</b>/projects</a></li>
+        <li><a href="#stack" data-s="stack"><b>HEAD</b>/stack</a></li>
+        <li><a href="#education" data-s="education"><b>GET</b>/education</a></li>
+        <li><a href="#contact" data-s="contact"><b>POST</b>/contact</a></li>
+      </ul>
+    </nav>
+    <button class="theme" id="theme" type="button" aria-label="Toggle light or dark theme">theme</button>
+  </aside>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero" id="top">
+      <div class="req"><span class="method">GET</span><span class="path">/adithya</span><span class="status">200 OK</span><span>application/json</span></div>
+      <h1>Velamakanni Venkata Sai <span>Adithya</span></h1>
+      <div class="hero-grid">
+        <div style="display:grid;gap:18px">
+          <p class="lead">Full-stack developer who spends his time on the backend: authentication, data integrity, and APIs that answer with the right status code.</p>
+          <p class="muted">I build and deploy web apps with Python, FastAPI and PostgreSQL. Two are live right now, and both are linked below.</p>
+          <div class="cta">
+            <a class="btn primary" href="#projects">See the projects</a>
+            <a class="btn" href="https://github.com/AdithyaVVS" target="_blank" rel="noopener">GitHub ↗</a>
+          </div>
+        </div>
+        <div class="res" aria-label="Profile as a JSON response">
+          <div class="res-bar"><span>response.json</span><span>Hyderabad, IN</span></div>
+          <pre id="json"></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about">
+      <div class="req"><span class="method">GET</span><span class="path">/about</span><span class="status">200 OK</span></div>
+      <h2>Reliable software, built carefully.</h2>
+      <p class="lead">I have hands-on experience building and deploying web applications with Python, FastAPI, PostgreSQL and JavaScript. My work covers REST API development, authentication, database design, data validation, CSV processing and backend security.</p>
+      <p class="muted" style="max-width:62ch">I studied Electronics and Communication Engineering (2021 to 2025, CGPA 8.66) and moved into software through building. My focus is reliable, maintainable code. Next up is a project that pairs a React frontend with generative AI, building on my Oracle GenAI certification.</p>
+    </section>
+
+    <!-- PROJECTS -->
+    <section id="projects">
+      <div class="req"><span class="method">GET</span><span class="path">/projects</span><span class="status">200 OK</span><span>2 items</span></div>
+      <h2>Two apps, both deployed.</h2>
+
+      <article class="panel" id="spendwise">
+        <div class="p-head">
+          <div class="req"><span class="method">GET</span><span class="path">/projects/spendwise</span></div>
+          <a class="btn primary" href="https://spendwise-1-epdq.onrender.com/" target="_blank" rel="noopener">Open live app ↗</a>
+        </div>
+        <div class="p-body">
+          <h3>SpendWise: Personal Expense &amp; Budget Manager</h3>
+          <ul>
+            <li>Built a multi-user expense and budget manager with category and monthly budgets and interactive spending dashboards.</li>
+            <li>Designed a CSV bank-statement import (up to 1,000 rows per upload) with duplicate detection and row-level error reporting.</li>
+            <li>Secured the app with JWT auth, bcrypt hashing, per-user data isolation, rate limiting and Decimal-based money math, backed by automated tests for auth, authorization, budgets and imports.</li>
+          </ul>
+          <div class="chips"><span class="chip">Python</span><span class="chip">FastAPI</span><span class="chip">PostgreSQL</span><span class="chip">SQLAlchemy</span><span class="chip">JavaScript</span><span class="chip">Chart.js</span><span class="chip">JWT</span></div>
+
+          <div class="demo" aria-labelledby="d1">
+            <div class="demo-title"><span id="d1">Try it: why money uses Decimal</span><span>runs in your browser</span></div>
+            <div class="row">
+              <input type="text" id="da" value="0.1" inputmode="decimal" aria-label="First amount">
+              <select id="dop" aria-label="Operation"><option value="+">+</option><option value="*">×</option></select>
+              <input type="text" id="db" value="0.2" inputmode="decimal" aria-label="Second amount">
+              <button class="mini" type="button" data-a="0.1" data-b="0.2" data-o="+">0.1 + 0.2</button>
+              <button class="mini" type="button" data-a="1.10" data-b="2.20" data-o="+">1.10 + 2.20</button>
+              <button class="mini" type="button" data-a="19.99" data-b="3" data-o="*">19.99 × 3</button>
+            </div>
+            <div class="cmp">
+              <div class="wrong"><small>FLOAT (JavaScript number)</small><output id="dfloat"></output></div>
+              <div class="right"><small>EXACT DECIMAL (what SpendWise stores)</small><output id="dexact"></output></div>
+            </div>
+          </div>
+
+          <div class="demo" aria-labelledby="d2">
+            <div class="demo-title"><span id="d2">Try it: CSV import with duplicate detection</span><span>simulation</span></div>
+            <textarea id="csv" spellcheck="false" aria-label="CSV rows to import">date,description,amount
+2026-10-01,Groceries,1250.50
+2026-10-02,Metro card,300.00
+2026-10-01,Groceries,1250.50
+2026-10-03,Coffee,abc
+2026-13-40,Rent,15000.00</textarea>
+            <div class="row"><button class="btn" id="csvrun" type="button">Import rows</button><span class="muted mono" style="font-size:12px">Edit the rows above and run it again.</span></div>
+            <div class="out" id="csvout"></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel" id="linktrack">
+        <div class="p-head">
+          <div class="req"><span class="method">GET</span><span class="path">/projects/linktrack</span></div>
+          <a class="btn primary" href="https://linktrack-ljbg.onrender.com" target="_blank" rel="noopener">Open live app ↗</a>
+        </div>
+        <div class="p-body">
+          <h3>LinkTrack: URL Shortener with Click Analytics</h3>
+          <ul>
+            <li>Built a URL shortener with collision-safe short codes, optional expiry, redirects, and distinct responses for unknown and expired links.</li>
+            <li>Added an analytics dashboard (clicks, referrers, daily usage) using indexed SQL aggregations, with click recording moved to background tasks so redirects stay fast.</li>
+            <li>Wrote 19 automated tests covering redirects, collisions, analytics and security cases.</li>
+          </ul>
+          <div class="chips"><span class="chip">Python</span><span class="chip">FastAPI</span><span class="chip">PostgreSQL</span><span class="chip">SQLAlchemy</span><span class="chip">JavaScript</span><span class="chip">Chart.js</span><span class="chip">Pytest</span></div>
+
+          <div class="demo" aria-labelledby="d3">
+            <div class="demo-title"><span id="d3">Try it: resolve a short code</span><span>simulation, not the live service</span></div>
+            <div class="row">
+              <span class="op">/</span><input type="text" id="code" value="adi24" aria-label="Short code" autocomplete="off" autocapitalize="off">
+              <button class="btn" id="resolve" type="button">Send request</button>
+              <button class="mini" type="button" data-c="adi24">active</button>
+              <button class="mini" type="button" data-c="promo1">expired</button>
+              <button class="mini" type="button" data-c="zzzzz">unknown</button>
+            </div>
+            <div class="out" id="rout" aria-live="polite"></div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- STACK -->
+    <section id="stack">
+      <div class="req"><span class="method">HEAD</span><span class="path">/stack</span><span class="status">200 OK</span></div>
+      <h2>What I work with.</h2>
+      <dl class="panel hdrs" style="margin:0">
+        <div class="hdr"><dt>X-Languages</dt><dd><span>Python</span><span>SQL</span></dd></div>
+        <div class="hdr"><dt>X-Frontend</dt><dd><span>HTML5</span><span>CSS3</span><span>JavaScript</span></dd></div>
+        <div class="hdr"><dt>X-Backend</dt><dd><span>FastAPI</span><span>REST API Development</span><span>SQLAlchemy</span><span>Pydantic</span></dd></div>
+        <div class="hdr"><dt>X-Data-Security</dt><dd><span>PostgreSQL</span><span>Database Design</span><span>JWT Authentication</span><span>bcrypt</span><span>Input Validation</span></dd></div>
+        <div class="hdr"><dt>X-Tooling</dt><dd><span>Git</span><span>GitHub</span><span>Docker</span><span>Alembic</span><span>Pytest</span></dd></div>
+        <div class="hdr next"><dt>X-Next</dt><dd><span>React</span><span>Generative AI</span></dd></div>
+      </dl>
+    </section>
+
+    <!-- EDUCATION -->
+    <section id="education">
+      <div class="req"><span class="method">GET</span><span class="path">/education</span><span class="status">200 OK</span></div>
+      <h2>Education and certifications.</h2>
+      <div class="cards">
+        <div class="panel card">
+          <span class="mono muted" style="font-size:12px">2021 – 2025</span>
+          <div class="big">8.66<small>CGPA</small></div>
+          <h3>B.Tech, Electronics and Communication Engineering</h3>
+          <p class="muted">Marri Laxman Reddy Institute of Technology and Management, Dundigal, Hyderabad</p>
+        </div>
+        <div class="panel card">
+          <span class="mono muted" style="font-size:12px">2019 – 2021</span>
+          <div class="big">96.6%<small>Intermediate</small></div>
+          <h3>Intermediate</h3>
+          <p class="muted">Sri Chaitanya Junior College, Kukatpally, Hyderabad</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="cert"><div><b>Oracle Cloud Infrastructure 2025 Certified Generative AI Professional</b><div class="muted mono" style="font-size:12px">Oracle</div></div><a href="https://catalog-education.oracle.com/ords/certview/sharebadge?id=DF3549C0708C28C197532E1D42B95B7FE09B7B950A724B4B632479AB37030160" target="_blank" rel="noopener">View badge ↗</a></div>
+        <div class="cert"><div><b>Programming Essentials in Python</b><div class="muted mono" style="font-size:12px">Cisco Networking Academy</div></div><a href="https://drive.google.com/file/d/1gbUeNOeyRMV7UU94Wzg2gI1q_rkxTRci/view?usp=sharing" target="_blank" rel="noopener">View certificate ↗</a></div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+      <div class="req"><span class="method">POST</span><span class="path">/contact</span><span class="status warn">202 Accepted</span></div>
+      <h2>Let's build something.</h2>
+      <p class="lead">I'm looking for a developer role. Email is the fastest way to reach me.</p>
+      <div class="panel mail">
+        <code id="email">vvsadithya0903@gmail.com</code>
+        <button class="btn primary" id="copy" type="button">Copy address</button>
+      </div>
+      <div class="contact-grid">
+        <a class="panel link-card" href="https://github.com/AdithyaVVS" target="_blank" rel="noopener"><b>GitHub ↗</b><span>github.com/AdithyaVVS</span></a>
+        <a class="panel link-card" href="https://www.hackerrank.com/profile/vvsadithya0903" target="_blank" rel="noopener"><b>HackerRank ↗</b><span>hackerrank.com/profile/vvsadithya0903</span></a>
+        <a class="panel link-card" href="https://developer-showcase--adithyavelamaka.replit.app/" target="_blank" rel="noopener"><b>Earlier portfolio ↗</b><span>developer-showcase on Replit</span></a>
+      </div>
+    </section>
+
+    <footer>Written in plain HTML, CSS and JavaScript. Hyderabad, 2026.</footer>
+  </main>
+</div>
+
+<script>
+(function () {
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+
+  /* ---- theme toggle ---- */
+  var root = document.documentElement;
+  try { var saved = localStorage.getItem("theme"); if (saved) root.setAttribute("data-theme", saved); } catch (e) {}
+  $("#theme").addEventListener("click", function () {
+    var cur = root.getAttribute("data-theme");
+    if (!cur) cur = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    var next = cur === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("theme", next); } catch (e) {}
+  });
+
+  /* ---- hero JSON ---- */
+  var lines = [
+    ['<span class="d">{</span>'],
+    ['  <span class="k">"name"</span>: <span class="s">"V. V. S. Adithya"</span>,'],
+    ['  <span class="k">"role"</span>: <span class="s">"Full-Stack Developer"</span>,'],
+    ['  <span class="k">"focus"</span>: [<span class="s">"Python"</span>, <span class="s">"FastAPI"</span>, <span class="s">"PostgreSQL"</span>],'],
+    ['  <span class="k">"location"</span>: <span class="s">"Hyderabad, India"</span>,'],
+    ['  <span class="k">"degree"</span>: <span class="s">"B.Tech ECE"</span>,'],
+    ['  <span class="k">"cgpa"</span>: <span class="n">8.66</span>,'],
+    ['  <span class="k">"apps_deployed"</span>: <span class="n">2</span>,'],
+    ['  <span class="k">"certified_genai"</span>: <span class="b">true</span>,'],
+    ['  <span class="k">"open_to_work"</span>: <span class="b">true</span>'],
+    ['<span class="d">}</span>']
+  ];
+  $("#json").innerHTML = lines.map(function (l, i) { return '<span class="l" style="--i:' + i + '">' + l[0] + '</span>'; }).join("");
+
+  /* ---- active route ---- */
+  var links = {};
+  document.querySelectorAll("#nav a").forEach(function (a) { links[a.dataset.s] = a; });
+  function setActive(id) {
+    Object.keys(links).forEach(function (k) { links[k].setAttribute("aria-current", k === id ? "true" : "false"); });
+  }
+  setActive("top");
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) setActive(e.target.id); });
+    }, { rootMargin: "-25% 0px -65% 0px" });
+    ["top", "about", "projects", "stack", "education", "contact"].forEach(function (id) { var el = document.getElementById(id); if (el) io.observe(el); });
+  }
+
+  /* ---- copy email ---- */
+  $("#copy").addEventListener("click", function () {
+    var btn = this, txt = $("#email").textContent;
+    function done() { btn.textContent = "Copied"; setTimeout(function () { btn.textContent = "Copy address"; }, 1600); }
+    function fallback() {
+      var r = document.createRange(); r.selectNodeContents($("#email"));
+      var s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = "Press Ctrl+C";
+    }
+    try { navigator.clipboard.writeText(txt).then(done, fallback); } catch (e) { fallback(); }
+  });
+
+  /* ---- exact decimal math (integers + scale) ---- */
+  var NUM = /^-?\d+(\.\d+)?$/;
+  function parse(str) {
+    var neg = str[0] === "-", s = neg ? str.slice(1) : str, p = s.split(".");
+    var frac = p[1] || "";
+    var v = BigInt(p[0] + frac);
+    return { v: neg ? -v : v, scale: frac.length };
+  }
+  function fmt(v, scale) {
+    var neg = v < 0n; if (neg) v = -v;
+    var s = v.toString();
+    if (scale > 0) {
+      while (s.length <= scale) s = "0" + s;
+      s = s.slice(0, s.length - scale) + "." + s.slice(s.length - scale);
+    }
+    return (neg ? "-" : "") + s;
+  }
+  function exact(a, b, op) {
+    var x = parse(a), y = parse(b);
+    if (op === "*") return fmt(x.v * y.v, x.scale + y.scale);
+    var sc = Math.max(x.scale, y.scale);
+    var xv = x.v * (10n ** BigInt(sc - x.scale)), yv = y.v * (10n ** BigInt(sc - y.scale));
+    return fmt(xv + yv, sc);
+  }
+  function runDecimal() {
+    var a = $("#da").value.trim(), b = $("#db").value.trim(), op = $("#dop").value;
+    var f = $("#dfloat"), e = $("#dexact");
+    if (!NUM.test(a) || !NUM.test(b)) { f.textContent = "-"; e.textContent = "Enter plain numbers like 12.50"; return; }
+    var fl = op === "*" ? parseFloat(a) * parseFloat(b) : parseFloat(a) + parseFloat(b);
+    f.textContent = String(fl);
+    try { e.textContent = exact(a, b, op); } catch (err) { e.textContent = "Could not compute"; }
+  }
+  ["#da", "#db"].forEach(function (s) { $(s).addEventListener("input", runDecimal); });
+  $("#dop").addEventListener("change", runDecimal);
+  document.querySelectorAll("[data-a]").forEach(function (b) {
+    b.addEventListener("click", function () { $("#da").value = b.dataset.a; $("#db").value = b.dataset.b; $("#dop").value = b.dataset.o; runDecimal(); });
+  });
+  runDecimal();
+
+  /* ---- CSV import simulation ---- */
+  function validDate(s) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s); if (!m) return false;
+    var d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+    return d.getUTCFullYear() === +m[1] && d.getUTCMonth() === +m[2] - 1 && d.getUTCDate() === +m[3];
+  }
+  function pill(cls, text) { var s = document.createElement("span"); s.className = "status" + (cls ? " " + cls : ""); s.textContent = text; return s; }
+  function runCsv() {
+    var rows = $("#csv").value.split(/\r?\n/).filter(function (r) { return r.trim() !== ""; });
+    var head = /^date\s*,/i.test(rows[0] || "") ? rows.shift() : null;
+    var out = $("#csvout"); out.textContent = "";
+    if (rows.length > 1000) {
+      var l = document.createElement("div"); l.className = "line"; l.appendChild(pill("bad", "rejected")); l.appendChild(document.createTextNode("Upload has " + rows.length + " rows. The limit is 1,000 per upload."));
+      out.appendChild(l); return;
+    }
+    var seen = {}, ok = 0, dup = 0, err = 0;
+    var wrap = document.createElement("div"); wrap.className = "table-wrap";
+    var t = document.createElement("table");
+    t.innerHTML = "<thead><tr><th>Row</th><th>Result</th><th>Detail</th></tr></thead>";
+    var tb = document.createElement("tbody");
+    rows.forEach(function (raw, i) {
+      var c = raw.split(",").map(function (x) { return x.trim(); });
+      var res, detail;
+      if (c.length !== 3) { res = ["bad", "error"]; detail = "Expected 3 columns, found " + c.length; err++; }
+      else if (!validDate(c[0])) { res = ["bad", "error"]; detail = "Invalid date: " + c[0]; err++; }
+      else if (!NUM.test(c[2])) { res = ["bad", "error"]; detail = "Amount is not a number: " + c[2]; err++; }
+      else if (seen[c.join("|").toLowerCase()]) { res = ["warn", "duplicate"]; detail = "Same as an earlier row, skipped"; dup++; }
+      else { seen[c.join("|").toLowerCase()] = 1; res = ["", "imported"]; detail = c[1] + " · " + c[2]; ok++; }
+      var tr = document.createElement("tr");
+      var td1 = document.createElement("td"); td1.textContent = String(i + 1);
+      var td2 = document.createElement("td"); td2.appendChild(pill(res[0], res[1]));
+      var td3 = document.createElement("td"); td3.textContent = detail;
+      tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tb.appendChild(tr);
+    });
+    t.appendChild(tb); wrap.appendChild(t); out.appendChild(wrap);
+    var sum = document.createElement("div"); sum.className = "muted";
+    sum.textContent = ok + " imported · " + dup + " duplicate · " + err + " with errors";
+    out.appendChild(sum);
+  }
+  $("#csvrun").addEventListener("click", runCsv);
+  runCsv();
+
+  /* ---- short-link resolver simulation ---- */
+  var LINKS = {
+    adi24: { to: "https://github.com/AdithyaVVS", state: "active" },
+    promo1: { to: "https://example.com/old-offer", state: "expired" }
+  };
+  function resolve() {
+    var code = $("#code").value.trim().replace(/^\//, "");
+    var out = $("#rout"); out.textContent = "";
+    function line() {
+      var d = document.createElement("div"); d.className = "line";
+      for (var i = 0; i < arguments.length; i++) d.appendChild(typeof arguments[i] === "string" ? document.createTextNode(arguments[i]) : arguments[i]);
+      out.appendChild(d); return d;
+    }
+    line("GET /" + code);
+    var hit = Object.prototype.hasOwnProperty.call(LINKS, code) ? LINKS[code] : null;
+    if (!code) { line(pill("bad", "400 Bad Request"), "Enter a short code."); return; }
+    if (!hit) { line(pill("bad", "404 Not Found"), "No link with this code."); return; }
+    if (hit.state === "expired") { line(pill("warn", "410 Gone"), "This link expired, so it no longer redirects."); return; }
+    line(pill("", "307 Temporary Redirect"), "Location: " + hit.to);
+    var later = line(pill("warn", "queued"), "click recorded in a background task, after the response");
+    setTimeout(function () { later.firstChild.className = "status"; later.firstChild.textContent = "logged"; later.lastChild.textContent = "click saved: referrer, timestamp, daily count"; }, 700);
+  }
+  $("#resolve").addEventListener("click", resolve);
+  $("#code").addEventListener("keydown", function (e) { if (e.key === "Enter") resolve(); });
+  document.querySelectorAll("[data-c]").forEach(function (b) {
+    b.addEventListener("click", function () { $("#code").value = b.dataset.c; resolve(); });
+  });
+  resolve();
+})();
+</script>
+</body>
+</html>
